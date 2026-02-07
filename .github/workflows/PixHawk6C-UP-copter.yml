@@ -1,0 +1,45 @@
+name: Build Pixhawk6C-UP (Copter)
+
+on:
+  push:
+    tags: [ "*" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      BOARD: Pixhawk6C-UP
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install prerequisites
+        run: |
+          sudo apt-get update
+          Tools/environment_install/install-prereqs-ubuntu.sh -y
+          . ~/.profile
+
+      - name: Configure
+        run: |
+          ./waf distclean || true
+          ./waf configure --board $BOARD
+
+      - name: Build Copter
+        run: ./waf copter
+
+      - name: Extract only APJ
+        run: |
+            mkdir out
+            APJ=$(find build/${BOARD} -name "*.apj" | head -n 1)
+            cp "$APJ" out/arducopter-${BOARD}-${{ github.ref_name }}.apj
+          
+      - name: Upload APJ
+        uses: actions/upload-artifact@v4
+        with:
+            name: firmware-${{ github.ref_name }}
+            path: out/*.apj
