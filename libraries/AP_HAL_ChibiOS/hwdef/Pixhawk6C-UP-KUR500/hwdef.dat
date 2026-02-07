@@ -1,3 +1,10 @@
-include ../Pixhawk6C-UP/hwdef.dat
+include ../Pixhawk6C/hwdef.dat
+
+# use a different board ID, so vehicles with OpenDroneID enabled are
+# prevented from loading the firmware without OpenDroneID enabled
+APJ_BOARD_ID 10056
+
+# enable OpenDroneID
+define AP_OPENDRONEID_ENABLED 1
 
 
