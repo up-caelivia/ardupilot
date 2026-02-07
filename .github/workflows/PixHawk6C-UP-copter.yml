@@ -1,4 +1,4 @@
-name: Build Pixhawk6C-UP (Copter)
+name: Build Pixhawk6C (Copter)
 
 on:
   push:
@@ -9,8 +9,15 @@ jobs:
   build:
     runs-on: ubuntu-22.04
 
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+          - Pixhawk6C-UP
+          - Pixhawk6C-UP-KUR500
+
     env:
-      BOARD: Pixhawk6C-UP
+      BOARD: ${{ matrix.board }}
 
     steps:
       - uses: actions/checkout@v4
@@ -21,31 +28,37 @@ jobs:
       - name: Install prerequisites
         run: |
           sudo apt-get update
-          sudo apt-get update
           DO_AP_STM_ENV=1 Tools/environment_install/install-prereqs-ubuntu.sh -y
-          . ~/.profile
+          . ~/.profile || true
 
       - name: Configure and build
+        shell: bash
         run: |
           source ~/.bashrc || true
           source ~/.profile || true
           export PATH=/opt/gcc-arm-none-eabi-10-2020-q4-major/bin:$PATH
           export PATH=$PWD/Tools/autotest:$PATH
-          which arm-none-eabi-ar
           ./waf distclean || true
-          ./waf configure --board $BOARD
+          ./waf configure --board "$BOARD"
           ./waf copter
 
-      - name: Extract only APJ
+      - name: Extract APJ + _with_bl.hex
+        shell: bash
         run: |
-            mkdir out
-            APJ=$(find build/${BOARD} -name "*.apj" | head -n 1)
-            cp "$APJ" out/arducopter-${BOARD}-${{ github.ref_name }}.apj
-            HEX=$(find build/${BOARD} -name "*bl.hex" | head -n 1)
-            cp "$HEX" out/arducopter-${BOARD}-${{ github.ref_name }}_bl.hex
-          
-      - name: Upload APJ
+          set -euo pipefail
+          mkdir -p out
+
+          APJ=$(find "build/${BOARD}" -type f -name "*.apj" | head -n 1)
+          HEX=$(find "build/${BOARD}" -type f -name "*bl.hex" | head -n 1)
+
+          cp "$APJ" "out/arducopter-${BOARD}-${{ github.ref_name }}.apj"
+          cp "$HEX" "out/arducopter-${BOARD}-${{ github.ref_name }}_with_bl.hex"
+
+          ls -lah out
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-            name: firmware-${{ github.ref_name }}
-            path: out/*.*
+          name: firmware-${{ github.ref_name }}-${{ matrix.board }}
+          path: out/*
+          if-no-files-found: error
