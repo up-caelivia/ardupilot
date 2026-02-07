@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     env:
       BOARD: Pixhawk6C-UP
@@ -21,25 +21,31 @@ jobs:
       - name: Install prerequisites
         run: |
           sudo apt-get update
-          Tools/environment_install/install-prereqs-ubuntu.sh -y
+          sudo apt-get update
+          DO_AP_STM_ENV=1 Tools/environment_install/install-prereqs-ubuntu.sh -y
           . ~/.profile
 
-      - name: Configure
+      - name: Configure and build
         run: |
+          source ~/.bashrc || true
+          source ~/.profile || true
+          export PATH=/opt/gcc-arm-none-eabi-10-2020-q4-major/bin:$PATH
+          export PATH=$PWD/Tools/autotest:$PATH
+          which arm-none-eabi-ar
           ./waf distclean || true
           ./waf configure --board $BOARD
-
-      - name: Build Copter
-        run: ./waf copter
+          ./waf copter
 
       - name: Extract only APJ
         run: |
             mkdir out
             APJ=$(find build/${BOARD} -name "*.apj" | head -n 1)
             cp "$APJ" out/arducopter-${BOARD}-${{ github.ref_name }}.apj
+            HEX=$(find build/${BOARD} -name "*bl.hex" | head -n 1)
+            cp "$HEX" out/arducopter-${BOARD}-${{ github.ref_name }}_bl.hex
           
       - name: Upload APJ
         uses: actions/upload-artifact@v4
         with:
             name: firmware-${{ github.ref_name }}
-            path: out/*.apj
+            path: out/*.*
