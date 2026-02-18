@@ -42,6 +42,7 @@
 #include <AP_DroneCAN/AP_DroneCAN.h>
 #include <stdio.h>
 #include <GCS_MAVLink/GCS.h>
+#include <AP_Notify/AP_Notify.h>
 
 extern const AP_HAL::HAL &hal;
 
@@ -375,6 +376,11 @@ void AP_OpenDroneID::send_location_message()
 
     // if we have watchdogged while armed then declare an emergency
     if (hal.util->was_watchdog_armed()) {
+        uav_status = MAV_ODID_STATUS_EMERGENCY;
+    }
+
+    // set emergency status if RC link is lost (radio failsafe active)
+    if (AP_Notify::flags.failsafe_radio) {
         uav_status = MAV_ODID_STATUS_EMERGENCY;
     }
 
