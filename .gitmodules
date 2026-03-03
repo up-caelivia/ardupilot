@@ -42,3 +42,6 @@
 [submodule "modules/lwip"]
 	path = modules/lwip
 	url = https://github.com/ArduPilot/lwip.git
+[submodule "UP/lua-script"]
+	path = UP/lua-script
+	url = https://github.com/up-caelivia/Lua-script.git

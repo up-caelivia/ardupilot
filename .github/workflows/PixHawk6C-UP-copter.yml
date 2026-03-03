@@ -34,6 +34,7 @@ jobs:
       - name: Configure and build
         shell: bash
         run: |
+          sh ./UP/lua-script/copyScripts.sh KUR500 libraries/AP_HAL_ChibiOS/hwdef/Pixhawk6C-UP-KUR500/scripts
           source ~/.bashrc || true
           source ~/.profile || true
           export PATH=/opt/gcc-arm-none-eabi-10-2020-q4-major/bin:$PATH
