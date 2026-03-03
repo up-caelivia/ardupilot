@@ -384,16 +384,16 @@ void AP_OpenDroneID::send_location_message()
         uav_status = MAV_ODID_STATUS_EMERGENCY;
     }
 
-    float direction = ODID_INV_DIR;
-    if (!got_bad_gps_fix) {
-        direction = wrap_360(degrees(ahrs.groundspeed_vector().angle())); // heading (degrees)
-    }
-
     const float speed_horizontal = create_speed_horizontal(ahrs.groundspeed());
 
     Vector3f velNED;
     UNUSED_RESULT(ahrs.get_velocity_NED(velNED));
     const float climb_rate = create_speed_vertical(-velNED.z); //make sure climb_rate is within Remote ID limit
+    
+    float direction = ODID_INV_DIR;
+    if (!got_bad_gps_fix && (speed_horizontal > ODID_RES_SPEED_H)) {
+        direction = wrap_360(degrees(ahrs.groundspeed_vector().angle())); // heading (degrees)
+    }
 
     int32_t latitude = 0;
     int32_t longitude = 0;

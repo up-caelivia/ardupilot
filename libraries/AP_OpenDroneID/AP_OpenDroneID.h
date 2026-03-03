@@ -45,6 +45,7 @@
 #define ODID_MIN_SPEED_H     0       // Minimum speed horizontal
 #define ODID_MAX_SPEED_H     254.25f // Maximum speed horizontal
 #define ODID_INV_SPEED_H     255     // Invalid speed horizontal
+#define ODID_RES_SPEED_H     0.25f   // minimum speed horizontal to calculate ODID_INV_DIR
 #define ODID_MIN_SPEED_V     (-62)   // Minimum speed vertical
 #define ODID_MAX_SPEED_V     62      // Maximum speed vertical
 #define ODID_INV_SPEED_V     63      // Invalid speed vertical
