@@ -45,6 +45,7 @@
 #define ODID_MIN_SPEED_H     0       // Minimum speed horizontal
 #define ODID_MAX_SPEED_H     254.25f // Maximum speed horizontal
 #define ODID_INV_SPEED_H     255     // Invalid speed horizontal
+#define ODID_RES_SPEED_H     0.25f   // minimum speed horizontal to calculate ODID_INV_DIR
 #define ODID_MIN_SPEED_V     (-62)   // Minimum speed vertical
 #define ODID_MAX_SPEED_V     62      // Maximum speed vertical
 #define ODID_INV_SPEED_V     63      // Invalid speed vertical
@@ -184,8 +185,8 @@ private:
     MAV_ODID_SPEED_ACC create_enum_speed_accuracy(float Accuracy) const;
     MAV_ODID_TIME_ACC create_enum_timestamp_accuracy(float Accuracy) const;
     uint16_t create_direction(uint16_t direction) const;
-    uint16_t create_speed_horizontal(uint16_t speed) const;
-    int16_t create_speed_vertical(int16_t speed) const;
+    float create_speed_horizontal(float speed) const;
+    float create_speed_vertical(float speed) const;
     float create_altitude(float altitude) const;
     float create_location_timestamp(float timestamp) const;
 

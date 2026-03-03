@@ -384,16 +384,16 @@ void AP_OpenDroneID::send_location_message()
         uav_status = MAV_ODID_STATUS_EMERGENCY;
     }
 
-    float direction = ODID_INV_DIR;
-    if (!got_bad_gps_fix) {
-        direction = wrap_360(degrees(ahrs.groundspeed_vector().angle())); // heading (degrees)
-    }
-
     const float speed_horizontal = create_speed_horizontal(ahrs.groundspeed());
 
     Vector3f velNED;
     UNUSED_RESULT(ahrs.get_velocity_NED(velNED));
     const float climb_rate = create_speed_vertical(-velNED.z); //make sure climb_rate is within Remote ID limit
+    
+    float direction = ODID_INV_DIR;
+    if (!got_bad_gps_fix && (speed_horizontal > ODID_RES_SPEED_H)) {
+        direction = wrap_360(degrees(ahrs.groundspeed_vector().angle())); // heading (degrees)
+    }
 
     int32_t latitude = 0;
     int32_t longitude = 0;
@@ -468,7 +468,14 @@ void AP_OpenDroneID::send_location_message()
     float timestamp = ODID_INV_TIMESTAMP;
     if (!got_bad_gps_fix) {
         uint32_t time_week_ms = gps.time_week_ms();
-        timestamp = float(time_week_ms % (3600 * 1000)) * 0.001;
+        const int32_t GPS_UTC_LEAP = 18;  // seconds
+        int32_t utc_ms = (int32_t)time_week_ms - (GPS_UTC_LEAP * 1000);
+        // safe wrap of one week
+        if (utc_ms < 0) {
+            utc_ms += (7 * 24 * 3600 * 1000);
+        }
+
+        timestamp = float(utc_ms % (3600 * 1000)) * 0.001f;
         timestamp = create_location_timestamp(timestamp);   //make sure timestamp is within Remote ID limit
     }
 
@@ -702,7 +709,7 @@ MAV_ODID_TIME_ACC AP_OpenDroneID::create_enum_timestamp_accuracy(float accuracy)
 }
 
 // make sure value is within limits of remote ID standard
-uint16_t AP_OpenDroneID::create_speed_horizontal(uint16_t speed) const
+float AP_OpenDroneID::create_speed_horizontal(float speed) const
 {
     if (speed > ODID_MAX_SPEED_H) { // constraint function can't be used, because out of range value is invalid
         speed = ODID_INV_SPEED_H;
@@ -712,7 +719,7 @@ uint16_t AP_OpenDroneID::create_speed_horizontal(uint16_t speed) const
 }
 
 // make sure value is within limits of remote ID standard
-int16_t AP_OpenDroneID::create_speed_vertical(int16_t speed) const
+float AP_OpenDroneID::create_speed_vertical(float speed) const
 {
     if (speed > ODID_MAX_SPEED_V) { // constraint function can't be used, because out of range value is invalid
         speed = ODID_INV_SPEED_V;
