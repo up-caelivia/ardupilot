@@ -21,7 +21,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
+        with:          
+          token: ${{ secrets.SUBMODULES_PAT }}
           submodules: recursive
           fetch-depth: 0
 
