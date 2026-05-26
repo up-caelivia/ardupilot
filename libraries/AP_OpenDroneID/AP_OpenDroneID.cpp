@@ -435,21 +435,6 @@ void AP_OpenDroneID::send_location_message()
     MAV_ODID_SPEED_ACC speed_accuracy_mav = MAV_ODID_SPEED_ACC_UNKNOWN;
     MAV_ODID_TIME_ACC timestamp_accuracy_mav = MAV_ODID_TIME_ACC_UNKNOWN;
 
-    float horizontal_accuracy;
-    if (gps.horizontal_accuracy(horizontal_accuracy)) {
-        horizontal_accuracy_mav = create_enum_horizontal_accuracy(horizontal_accuracy);
-    }
-
-    float vertical_accuracy;
-    if (gps.vertical_accuracy(vertical_accuracy)) {
-        vertical_accuracy_mav = create_enum_vertical_accuracy(vertical_accuracy);
-    }
-
-    float speed_accuracy;
-    if (gps.speed_accuracy(speed_accuracy)) {
-        speed_accuracy_mav = create_enum_speed_accuracy(speed_accuracy);
-    }
-
     // if we have ever had GPS lock then we will have better than 1s
     // accuracy, as we use system timer to propogate time
     timestamp_accuracy_mav =  create_enum_timestamp_accuracy(1.0);
@@ -458,9 +443,6 @@ void AP_OpenDroneID::send_location_message()
     // thus ArduPilot cannot reasonably fill this in.
     // Instead allow a manufacturer to use a parameter to fill this in
     uint8_t barometer_accuracy = MAV_ODID_VER_ACC_UNKNOWN; //ahrs class does not provide accuracy readings
-    if (!is_equal(_baro_accuracy.get(), -1.0f)) {
-        barometer_accuracy = create_enum_vertical_accuracy(_baro_accuracy);
-    }
 
     // Timestamp here is the number of seconds after into the current hour referenced to UTC time (up to one hour)
 
